@@ -19,7 +19,13 @@ export default function createOrbitControls(
             y: camera.position.y,
             z: camera.position.z
         });
-    };
+
+        console.log('🎯 OrbitControls target:', {
+            x: controls.target.x,
+            y: controls.target.y,
+            z: controls.target.z
+        });
+    }
 
     // change 이벤트에 디바운스 적용
     controls.addEventListener("change", () => {
