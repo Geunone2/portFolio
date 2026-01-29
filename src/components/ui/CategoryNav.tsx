@@ -3,33 +3,57 @@ import type {CategoryType} from "../../utils/categoryCamera.ts";
 interface CategoryNavProps {
     onCategoryClick: (category: CategoryType) => void;
     currentCategory?: CategoryType;
+    currentIndex?: number;
 }
 
-export default function CategoryNav({onCategoryClick, currentCategory}: CategoryNavProps) {
-    const categories: { id: CategoryType; label: string }[] = [
-        {id: "default", label: "처음으로"},
-        {id: "intro", label: "자기소개"},
-        {id: "project", label: "프로젝트"},
-        {id: "contact", label: "컨택트"},
+export default function CategoryNav({onCategoryClick, currentCategory, currentIndex = 0}: CategoryNavProps) {
+    const categories: { id: CategoryType; label: string; number: string }[] = [
+        {id: "default", label: "Home", number: "01"},
+        {id: "intro", label: "About", number: "02"},
+        {id: "project", label: "Works", number: "03"},
+        {id: "contact", label: "Contact", number: "04"},
     ];
 
+    const currentNumber = categories.find(count => count.id === currentCategory)?.number || "01";
+
+
     return (
-        <nav className="fixed top-8 left-1/2 -translate-x-1/2 z-10">
-            <div className="flex gap-4 bg-black/50 backdrop-blur-sm px-6 py-3 rounded-full">
+        <>
+            {/* 상단 네비게이션 - 우측 상단 */}
+            <nav className="fixed top-8 right-8 z-10 flex items-center gap-1">
                 {categories.map((category) => (
                     <button
                         key={category.id}
                         onClick={() => onCategoryClick(category.id)}
-                        className={`px-4 py-2 rounded-full transition-all ${
-                            currentCategory === category.id
-                                ? 'bg-white text-black'
-                                : 'text-white hover:bg-white/20'
-                        }`}
+                        className="group relative px-5 py-3"
                     >
-                        {category.label}
+                        <span className={`text-lg font-bold tracking-widest transition-all duration-300 ${
+                            currentCategory === category.id
+                                ? 'text-white'
+                                : 'text-white/30 group-hover:text-white/60'
+                        }`}>
+                            {category.label}
+                        </span>
+
+                        {currentCategory === category.id && (
+                            <div className="absolute bottom-0 left-0 w-full h-px bg-white"/>
+                        )}
                     </button>
                 ))}
+
+                {/* 🔑 현재 카테고리의 숫자 표시 */}
+                <div className="text-white font-bold text-base ml-6">
+                    {currentNumber}
+                </div>
+            </nav>
+
+            {/* 하단 프로그레스 바 */}
+            <div className="fixed bottom-0 left-0 w-full h-1 bg-white/5 z-10">
+                <div
+                    className="h-full bg-white transition-all duration-500 ease-out"
+                    style={{width: `${((currentIndex + 1) / 6) * 100}%`}}
+                />
             </div>
-        </nav>
+        </>
     )
 }

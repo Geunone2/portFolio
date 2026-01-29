@@ -10,6 +10,9 @@ export default function createOrbitControls(
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
 
+    // 줌 비활성화 (휠 스크롤과 충돌 방지)
+    controls.enableZoom = false;
+
     // 디바운싱 함수
     let timeoutId: number | null = null;
 
