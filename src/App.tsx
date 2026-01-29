@@ -8,18 +8,18 @@ import {createRaycaster, getClickableObject, getIntersectedObjects, getMousePosi
 import {animateCameraTo, calculateCameraTarget} from "./utils/cameraAnimation.ts";
 import {loadGLTFModel} from "./load/GLTFLoader.ts";
 import CategoryNav from "./components/ui/CategoryNav.tsx";
-import {CATEGORY_POSITIONS, type CategoryType, getCategoryFromType} from "./utils/categoryCamera.ts";
+import {CAMERA_PRESETS, CATEGORY_POSITIONS, type CategoryType, getCategoryFromType} from "./utils/categoryCamera.ts";
+import {createWheelScrollHandler} from "./utils/wheelScroll.ts";
 
 function App() {
     const animationIdRef = useRef<number | null>(null);
     const isAnimatingRef = useRef(false);
-    const sceneRef = useRef<THREE.Scene | null>(null);
     const cameraRef = useRef<THREE.Camera | null>(null);
-    const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
     // eslint-disable-next-line
     const controlsRef = useRef<any>(null);
 
     const [currentCategory, setCurrentCategory] = useState<CategoryType>("default");
+    const [currentPresetIndex, setCurrentPresetIndex] = useState(0);
 
     useEffect(() => {
         const canvas = document.getElementById("c") as HTMLCanvasElement;
@@ -29,9 +29,7 @@ function App() {
         const controls = createOrbitControls(camera, renderer.domElement);
         const raycaster = createRaycaster();
 
-        sceneRef.current = scene;
         cameraRef.current = camera;
-        rendererRef.current = renderer;
         controlsRef.current = controls;
 
         loadGLTFModel("/assets/scene.gltf")
@@ -96,6 +94,84 @@ function App() {
                 console.error("모델 로드 실패:", error);
             });
 
+        const wheelHandler = createWheelScrollHandler({
+            onScrollUp: () => {
+                if (isAnimatingRef.current || !cameraRef.current || !controlsRef.current) {
+                    return;
+                }
+
+                // 🔑 함수형 업데이트로 최신 state 사용
+                setCurrentPresetIndex((prevIndex) => {
+                    const nextIndex = Math.max(prevIndex - 1, 0);
+
+                    if (nextIndex === prevIndex) {
+                        return prevIndex; // 변경 없음
+                    }
+
+                    const preset = CAMERA_PRESETS[nextIndex];
+                    console.log('⬆️ 스크롤:', prevIndex, '→', nextIndex, preset.name);
+
+                    isAnimatingRef.current = true;
+                    setCurrentCategory(preset.category);
+
+                    const timeline = animateCameraTo(
+                        cameraRef.current!,
+                        {
+                            position: preset.position,
+                            lookAt: preset.lookAt
+                        },
+                        controlsRef.current,
+                        1.5
+                    );
+
+                    timeline.eventCallback("onComplete", () => {
+                        isAnimatingRef.current = false;
+                    });
+
+                    return nextIndex;
+                });
+            },
+            onScrollDown: () => {
+                if (isAnimatingRef.current || !cameraRef.current || !controlsRef.current) {
+                    return;
+                }
+
+                // 🔑 함수형 업데이트로 최신 state 사용
+                setCurrentPresetIndex((prevIndex) => {
+                    const nextIndex = Math.min(prevIndex + 1, CAMERA_PRESETS.length - 1);
+
+                    if (nextIndex === prevIndex) {
+                        return prevIndex; // 변경 없음
+                    }
+
+                    const preset = CAMERA_PRESETS[nextIndex];
+                    console.log('⬇️ 스크롤:', prevIndex, '→', nextIndex, preset.name);
+
+                    isAnimatingRef.current = true;
+                    setCurrentCategory(preset.category);
+
+                    const timeline = animateCameraTo(
+                        cameraRef.current!,
+                        {
+                            position: preset.position,
+                            lookAt: preset.lookAt
+                        },
+                        controlsRef.current,
+                        1.5
+                    );
+
+                    timeline.eventCallback("onComplete", () => {
+                        isAnimatingRef.current = false;
+                    });
+
+                    return nextIndex;
+                });
+            },
+            debounceTime: 800
+        });
+
+        wheelHandler.attach(canvas);
+
         function handleResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
@@ -106,6 +182,7 @@ function App() {
 
         return () => {
             window.removeEventListener('resize', handleResize);
+            wheelHandler.detach(canvas);
             if (animationIdRef.current) {
                 cancelAnimationFrame(animationIdRef.current);
             }
@@ -121,8 +198,14 @@ function App() {
 
         const categoryPosition = CATEGORY_POSITIONS[category];
 
+        const presetIndex = CAMERA_PRESETS.findIndex(preset => preset.category === category);
+
         isAnimatingRef.current = true;
         setCurrentCategory(category);
+
+        if (presetIndex !== -1) {
+            setCurrentPresetIndex(presetIndex);
+        }
 
         const timeline = animateCameraTo(
             cameraRef.current,
@@ -138,7 +221,9 @@ function App() {
     return (
         <>
             <CategoryNav onCategoryClick={handleCategoryClick}
-                         currentCategory={currentCategory}/>
+                         currentCategory={currentCategory}
+                         currentIndex={currentPresetIndex}
+            />
         </>
     );
 }
