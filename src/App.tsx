@@ -5,12 +5,15 @@ import initialSetup, {resizeRendererToDisplaySize} from "./utils/sceneSetup.ts";
 import createOrbitControls from "./camera/OrbitControlsSetup.ts";
 import setupAnimations from "./load/AnimationLoader.ts";
 import {createRaycaster, getClickableObject, getIntersectedObjects, getMousePosition} from "./utils/raycaster.ts";
-import {animateCameraTo, calculateCameraTarget} from "./utils/cameraAnimation.ts";
+import {animateCameraTo, calculateCameraTarget} from "./camera/cameraAnimation.ts";
 import {loadGLTFModel} from "./load/GLTFLoader.ts";
 import CategoryNav from "./components/ui/CategoryNav.tsx";
-import {CAMERA_PRESETS, CATEGORY_POSITIONS, type CategoryType, getCategoryFromType} from "./utils/categoryCamera.ts";
+import {CAMERA_PRESETS, CATEGORY_POSITIONS, type CategoryType, getCategoryFromType} from "./camera/categoryCamera.ts";
 import {createWheelScrollHandler} from "./utils/wheelScroll.ts";
+import ContentManager from "./components/ui/ContentManager.tsx";
+import LoadingScreen from "./components/ui/LoadingScreen.tsx";
 
+// App.tsx 수정
 function App() {
     const animationIdRef = useRef<number | null>(null);
     const isAnimatingRef = useRef(false);
@@ -20,6 +23,12 @@ function App() {
 
     const [currentCategory, setCurrentCategory] = useState<CategoryType>("default");
     const [currentPresetIndex, setCurrentPresetIndex] = useState(0);
+    const [showContent, setShowContent] = useState(true); // 초기에는 보임
+
+    // 로딩 상태
+    const [loadingProgress, setLoadingProgress] = useState(0);
+    const [isLoadingComplete, setIsLoadingComplete] = useState(false);
+    const [hasEntered, setHasEntered] = useState(false);
 
     useEffect(() => {
         const canvas = document.getElementById("c") as HTMLCanvasElement;
@@ -32,9 +41,13 @@ function App() {
         cameraRef.current = camera;
         controlsRef.current = controls;
 
-        loadGLTFModel("/assets/scene.gltf")
+        loadGLTFModel("/assets/scene.gltf", (progress) => {
+            setLoadingProgress(progress);
+        })
             .then(({model, animations}) => {
                 scene.add(model);
+
+                setIsLoadingComplete(true);
 
                 const animationSetup = setupAnimations(model, animations);
                 const clock = new THREE.Clock();
@@ -67,6 +80,7 @@ function App() {
 
                     if (clickedObject) {
                         isAnimatingRef.current = true;
+                        setShowContent(false); // 🔑 애니메이션 시작 시 숨김
 
                         const objectType = clickedObject.userData.type;
                         if (objectType) {
@@ -78,6 +92,7 @@ function App() {
 
                         timeline.eventCallback('onComplete', () => {
                             isAnimatingRef.current = false;
+                            setShowContent(true); // 🔑 애니메이션 완료 후 표시
                         });
                     }
                 });
@@ -100,18 +115,18 @@ function App() {
                     return;
                 }
 
-                // 🔑 함수형 업데이트로 최신 state 사용
                 setCurrentPresetIndex((prevIndex) => {
                     const nextIndex = Math.max(prevIndex - 1, 0);
 
                     if (nextIndex === prevIndex) {
-                        return prevIndex; // 변경 없음
+                        return prevIndex;
                     }
 
                     const preset = CAMERA_PRESETS[nextIndex];
                     console.log('⬆️ 스크롤:', prevIndex, '→', nextIndex, preset.name);
 
                     isAnimatingRef.current = true;
+                    setShowContent(false); // 🔑 애니메이션 시작 시 숨김
                     setCurrentCategory(preset.category);
 
                     const timeline = animateCameraTo(
@@ -126,6 +141,7 @@ function App() {
 
                     timeline.eventCallback("onComplete", () => {
                         isAnimatingRef.current = false;
+                        setShowContent(true); // 🔑 애니메이션 완료 후 표시
                     });
 
                     return nextIndex;
@@ -136,18 +152,18 @@ function App() {
                     return;
                 }
 
-                // 🔑 함수형 업데이트로 최신 state 사용
                 setCurrentPresetIndex((prevIndex) => {
                     const nextIndex = Math.min(prevIndex + 1, CAMERA_PRESETS.length - 1);
 
                     if (nextIndex === prevIndex) {
-                        return prevIndex; // 변경 없음
+                        return prevIndex;
                     }
 
                     const preset = CAMERA_PRESETS[nextIndex];
                     console.log('⬇️ 스크롤:', prevIndex, '→', nextIndex, preset.name);
 
                     isAnimatingRef.current = true;
+                    setShowContent(false); // 🔑 애니메이션 시작 시 숨김
                     setCurrentCategory(preset.category);
 
                     const timeline = animateCameraTo(
@@ -162,6 +178,7 @@ function App() {
 
                     timeline.eventCallback("onComplete", () => {
                         isAnimatingRef.current = false;
+                        setShowContent(true); // 🔑 애니메이션 완료 후 표시
                     });
 
                     return nextIndex;
@@ -192,19 +209,70 @@ function App() {
     }, []);
 
     const handleCategoryClick = (category: CategoryType) => {
-        if (isAnimatingRef.current || !cameraRef.current || !controlsRef.current) {
+        if (isAnimatingRef.current || !cameraRef.current || !controlsRef.current) return;
+
+        const targetPresetIndex = CAMERA_PRESETS.findIndex(preset => preset.category === category);
+        if (targetPresetIndex === -1) return;
+
+        if ((currentCategory === 'skills' && category === 'contact') ||
+            (currentCategory === 'contact' && category === 'skills')) {
+
+            const finalCategory = category;
+            const finalPresetIndex = targetPresetIndex;
+
+            isAnimatingRef.current = true;
+            setShowContent(false); // 🔑 애니메이션 시작 시 숨김
+
+            const worksIndex = CAMERA_PRESETS.findIndex(p => p.id === 'project-overview');
+
+            setCurrentPresetIndex(worksIndex);
+            setCurrentCategory('project');
+
+            const worksPreset = CAMERA_PRESETS[worksIndex];
+
+            const timeline1 = animateCameraTo(
+                cameraRef.current,
+                {
+                    position: worksPreset.position,
+                    lookAt: worksPreset.lookAt
+                },
+                controlsRef.current,
+                1.5
+            );
+
+            timeline1.eventCallback('onComplete', () => {
+                setCurrentPresetIndex(finalPresetIndex);
+                setCurrentCategory(finalCategory);
+
+                const finalPreset = CAMERA_PRESETS[finalPresetIndex];
+
+                const timeline2 = animateCameraTo(
+                    cameraRef.current!,
+                    {
+                        position: finalPreset.position,
+                        lookAt: finalPreset.lookAt
+                    },
+                    controlsRef.current,
+                    1.5
+                );
+
+                timeline2.eventCallback('onComplete', () => {
+                    isAnimatingRef.current = false;
+                    setShowContent(true); // 🔑 최종 애니메이션 완료 후 표시
+                });
+            });
+
             return;
         }
 
         const categoryPosition = CATEGORY_POSITIONS[category];
 
-        const presetIndex = CAMERA_PRESETS.findIndex(preset => preset.category === category);
-
         isAnimatingRef.current = true;
+        setShowContent(false); // 🔑 애니메이션 시작 시 숨김
         setCurrentCategory(category);
 
-        if (presetIndex !== -1) {
-            setCurrentPresetIndex(presetIndex);
+        if (targetPresetIndex !== -1) {
+            setCurrentPresetIndex(targetPresetIndex);
         }
 
         const timeline = animateCameraTo(
@@ -215,15 +283,41 @@ function App() {
 
         timeline.eventCallback('onComplete', () => {
             isAnimatingRef.current = false;
+            setShowContent(true); // 🔑 애니메이션 완료 후 표시
         });
     };
 
+    const handleEnter = () => {
+        setHasEntered(true);
+    }
+
     return (
         <>
-            <CategoryNav onCategoryClick={handleCategoryClick}
-                         currentCategory={currentCategory}
-                         currentIndex={currentPresetIndex}
-            />
+            {!hasEntered && (
+                <LoadingScreen
+                    progress={loadingProgress}
+                    isComplete={isLoadingComplete}
+                    onEnter={handleEnter}
+                />
+            )}
+
+            {hasEntered && (
+                <>
+                    <CategoryNav
+                        onCategoryClick={handleCategoryClick}
+                        currentCategory={currentCategory}
+                        currentIndex={currentPresetIndex}
+                    />
+
+                    <ContentManager
+                        presetId={CAMERA_PRESETS[currentPresetIndex]?.id || "default"}
+                        isVisible={showContent}
+                        onBack={() => {
+                            handleCategoryClick("default");
+                        }}
+                    />
+                </>
+            )}
         </>
     );
 }

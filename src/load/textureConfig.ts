@@ -22,6 +22,12 @@ export const TEXTURE_MAPPING = {
         newName: "Contact",
         type: "contact",
         needsClone: true,
+    },
+    "jake_and_london_eye_london_eye_manual_bake_0": {
+        texturePath: "/assets/textures/skills.jpeg",
+        newName: "skills",
+        type: "skills",
+        needsClone: true,
     }
 } as const;
 

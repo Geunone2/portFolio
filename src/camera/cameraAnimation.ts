@@ -28,6 +28,21 @@ export function calculateCameraTarget(
         };
     }
 
+    if (object.name === "skills") {
+        return {
+            position: new THREE.Vector3(
+                11.272614812787253,
+                1.631537259998673,
+                -0.14602024909744432
+            ),
+            lookAt: new THREE.Vector3(
+                -0.05470008032311394,
+                0.5293691019117591,
+                -0.15203112151424705
+            )
+        }
+    }
+
     if (object.name === "NextFrame") {
         return {
             position: new THREE.Vector3(
