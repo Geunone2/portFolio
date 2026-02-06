@@ -3,7 +3,7 @@ import * as THREE from "three";
 export interface CameraPreset {
     id: string;
     name: string;
-    category: "default" | "intro" | "project" | "contact";
+    category: "default" | "intro" | "skills" | "project" | "contact";
     position: THREE.Vector3;
     lookAt: THREE.Vector3;
 }
@@ -40,6 +40,22 @@ export const CAMERA_PRESETS: CameraPreset[] = [
             9.487720450166938
         )
     },
+    {
+        id: "skills",
+        name: "기술",
+        category: "skills",
+        position: new THREE.Vector3(
+            12.047588345525694,
+            1.4917062376331311,
+            -2.3394363286051387
+        ),
+        lookAt: new THREE.Vector3(
+            7.30448263350288,
+            1.5507714302874,
+            -10.444967521706756
+        )
+    },
+
     {
         id: "project-overview",
         name: "프로젝트",
@@ -105,14 +121,16 @@ export const CAMERA_PRESETS: CameraPreset[] = [
 export const CATEGORY_POSITIONS = {
     default: CAMERA_PRESETS[0],
     intro: CAMERA_PRESETS[1],
-    project: CAMERA_PRESETS[2],
-    contact: CAMERA_PRESETS[5]
+    skills: CAMERA_PRESETS[2],
+    project: CAMERA_PRESETS[3],
+    contact: CAMERA_PRESETS[6]
 } as const;
 
 export type CategoryType = keyof typeof CATEGORY_POSITIONS;
 
 export function getCategoryFromType(type: string): CategoryType {
     if (type === "introduce") return "intro";
+    if (type === "skills") return "skills";
     if (type.startsWith("project")) return "project";
     if (type === "contact") return "contact";
 

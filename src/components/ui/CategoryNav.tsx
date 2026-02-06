@@ -1,4 +1,4 @@
-import type {CategoryType} from "../../utils/categoryCamera.ts";
+import type {CategoryType} from "../../camera/categoryCamera.ts";
 
 interface CategoryNavProps {
     onCategoryClick: (category: CategoryType) => void;
@@ -10,8 +10,9 @@ export default function CategoryNav({onCategoryClick, currentCategory, currentIn
     const categories: { id: CategoryType; label: string; number: string }[] = [
         {id: "default", label: "Home", number: "01"},
         {id: "intro", label: "About", number: "02"},
-        {id: "project", label: "Works", number: "03"},
-        {id: "contact", label: "Contact", number: "04"},
+        {id: "skills", label: "Skills", number: "03"},
+        {id: "project", label: "Works", number: "04"},
+        {id: "contact", label: "Contact", number: "05"},
     ];
 
     const currentNumber = categories.find(count => count.id === currentCategory)?.number || "01";
@@ -51,7 +52,7 @@ export default function CategoryNav({onCategoryClick, currentCategory, currentIn
             <div className="fixed bottom-0 left-0 w-full h-1 bg-white/5 z-10">
                 <div
                     className="h-full bg-white transition-all duration-500 ease-out"
-                    style={{width: `${((currentIndex + 1) / 6) * 100}%`}}
+                    style={{width: `${((currentIndex + 1) / 7) * 100}%`}}
                 />
             </div>
         </>

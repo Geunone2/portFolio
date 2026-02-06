@@ -7,31 +7,49 @@ export interface ModelLoadResult {
     animations: THREE.AnimationClip[];
 }
 
-function loadHighQualityTexture(textureLoader: THREE.TextureLoader, path: string): THREE.Texture {
-    const texture = textureLoader.load(path);
-
-    texture.colorSpace = THREE.SRGBColorSpace;
-
-    texture.anisotropy = 16;
-
-    texture.minFilter = THREE.LinearMipmapLinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-
-    texture.wrapS = THREE.ClampToEdgeWrapping;
-    texture.wrapT = THREE.ClampToEdgeWrapping;
-
-    return texture;
+function loadHighQualityTexture(textureLoader: THREE.TextureLoader, path: string): Promise<THREE.Texture> {
+    return new Promise((resolve, reject) => {
+        textureLoader.load(
+            path,
+            (loadedTexture) => {
+                loadedTexture.colorSpace = THREE.SRGBColorSpace;
+                loadedTexture.anisotropy = 16;
+                loadedTexture.minFilter = THREE.LinearMipmapLinearFilter;
+                loadedTexture.magFilter = THREE.LinearFilter;
+                loadedTexture.wrapS = THREE.ClampToEdgeWrapping;
+                loadedTexture.wrapT = THREE.ClampToEdgeWrapping;
+                resolve(loadedTexture);
+            },
+            undefined,
+            reject
+        );
+    });
 }
 
-export function loadGLTFModel(modelPath: string): Promise<ModelLoadResult> {
+export function loadGLTFModel(
+    modelPath: string,
+    onProgress?: (progress: number) => void)
+    : Promise<ModelLoadResult> {
     return new Promise((resolve, reject) => {
         const loader = new GLTFLoader();
         const textureLoader = new THREE.TextureLoader();
 
         loader.load(
             modelPath,
-            (gltf) => {
+            async (gltf) => {
                 const model = gltf.scene;
+
+                // GLTF 로딩 완료 시 50%
+                if (onProgress) {
+                    onProgress(50);
+                }
+
+                const textureLoadPromises: Promise<void>[] = [];
+                const meshesWithTextures: Array<{
+                    mesh: THREE.Mesh;
+                    material: THREE.MeshStandardMaterial;
+                    texture: THREE.Texture;
+                }> = [];
 
                 model.traverse((child) => {
                     if (child instanceof THREE.Mesh) {
@@ -46,15 +64,19 @@ export function loadGLTFModel(modelPath: string): Promise<ModelLoadResult> {
                             if (config.texturePath) {
                                 const material = config.needsClone
                                     ? (child.material as THREE.MeshStandardMaterial).clone()
-                                    : (child.material as THREE.MeshStandardMaterial)
+                                    : (child.material as THREE.MeshStandardMaterial);
 
-                                const newTexture = loadHighQualityTexture(textureLoader, config.texturePath);
-                                material.map = newTexture;
-                                material.needsUpdate = true;
+                                // 🔑 loadHighQualityTexture 함수 사용
+                                const texturePromise = loadHighQualityTexture(textureLoader, config.texturePath)
+                                    .then((newTexture) => {
+                                        meshesWithTextures.push({
+                                            mesh: child,
+                                            material,
+                                            texture: newTexture
+                                        });
+                                    });
 
-                                if (config.needsClone) {
-                                    child.material = material;
-                                }
+                                textureLoadPromises.push(texturePromise);
                             }
 
                             child.name = config.newName;
@@ -65,15 +87,52 @@ export function loadGLTFModel(modelPath: string): Promise<ModelLoadResult> {
                     }
                 });
 
-                resolve({
-                    model,
-                    animations: gltf.animations,
-                });
+                try {
+                    let loadedCount = 0;
+                    const totalTextures = textureLoadPromises.length;
+
+                    // 각 텍스처 로딩마다 진행률 업데이트 (50% ~ 100%)
+                    await Promise.all(
+                        textureLoadPromises.map(async (promise) => {
+                            await promise;
+                            loadedCount++;
+                            const textureProgress = 50 + (loadedCount / totalTextures) * 50;
+                            if (onProgress) {
+                                onProgress(textureProgress);
+                            }
+                        })
+                    );
+
+                    // 텍스처를 머티리얼에 적용
+                    meshesWithTextures.forEach(({mesh, material, texture}) => {
+                        material.map = texture;
+                        material.needsUpdate = true;
+
+                        const config = Object.values(TEXTURE_MAPPING).find(
+                            cfg => cfg.newName === mesh.name
+                        );
+
+                        if (config?.needsClone) {
+                            mesh.material = material;
+                        }
+                    });
+
+                    resolve({
+                        model,
+                        animations: gltf.animations,
+                    });
+                } catch (error) {
+                    reject(error);
+                }
             },
-            undefined,
-            (error) => {
-                reject(error);
-            }
+            (xhr) => {
+                // GLTF 로딩은 0~50%
+                const percentComplete = (xhr.loaded / xhr.total) * 50;
+                if (onProgress) {
+                    onProgress(percentComplete);
+                }
+            },
+            reject
         );
     });
 }
