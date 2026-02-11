@@ -2,19 +2,19 @@ export const TEXTURE_MAPPING = {
     "Object004_holly_manual_bake_0": {
         texturePath: '/assets/textures/Me.jpeg',
         newName: "Me",
-        type: "introduce",
+        type: "intro",
         needsClone: true,
     },
     "Object005_squirrel_manual_bake_0": {
         texturePath: '/assets/textures/NextFrame.jpeg',
         newName: 'NextFrame',
-        type: 'project1',
+        type: 'project-nextFrame',
         needsClone: true
     },
     "scarlett_frame_scarlett_manual_bake_0": {
         texturePath: "/assets/textures/LowPoly.jpeg",
         newName: 'LowPoly',
-        type: 'project2',
+        type: 'project-lowPoly',
         needsClone: true
     },
     "end_frame_end_frame_manual_bake_0": {

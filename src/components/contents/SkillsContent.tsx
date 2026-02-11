@@ -72,13 +72,15 @@ export default function SkillsContent({isVisible, onBack}: ContentProps) {
         >
             <div
                 ref={containerRef}
-                className="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 p-8 shadow-2xl max-w-2xl w-full mx-8 relative pointer-events-none"
+                className="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 p-8 shadow-2xl max-w-2xl w-full mx-8 relative pointer-events-auto"
             >
                 {/* 뒤로가기 버튼 - 우측 상단 */}
                 {onBack && (
                     <button
                         onClick={onBack}
-                        className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center bg-purple-400/20 hover:bg-purple-400/40 rounded-full border border-purple-400/50 text-purple-400 transition-all group z-10"
+                        className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center
+                        bg-purple-400/20 hover:bg-purple-400/40 rounded-full border border-purple-400/50
+                         text-purple-400 transition-all group z-10 pointer-events-auto"
                     >
                         <FaArrowLeft className="text-lg group-hover:scale-110 transition-transform"/>
                     </button>

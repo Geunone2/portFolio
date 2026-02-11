@@ -8,7 +8,7 @@ import {createRaycaster, getClickableObject, getIntersectedObjects, getMousePosi
 import {animateCameraTo, calculateCameraTarget} from "./camera/cameraAnimation.ts";
 import {loadGLTFModel} from "./load/GLTFLoader.ts";
 import CategoryNav from "./components/ui/CategoryNav.tsx";
-import {CAMERA_PRESETS, CATEGORY_POSITIONS, type CategoryType, getCategoryFromType} from "./camera/categoryCamera.ts";
+import {CAMERA_PRESETS, type CategoryType, getCategoryFromType} from "./camera/categoryCamera.ts";
 import {createWheelScrollHandler} from "./utils/wheelScroll.ts";
 import ContentManager from "./components/ui/ContentManager.tsx";
 import LoadingScreen from "./components/ui/LoadingScreen.tsx";
@@ -21,6 +21,8 @@ function App() {
     // eslint-disable-next-line
     const controlsRef = useRef<any>(null);
 
+    const currentPresetIndexRef = useRef(0);
+
     const [currentCategory, setCurrentCategory] = useState<CategoryType>("default");
     const [currentPresetIndex, setCurrentPresetIndex] = useState(0);
     const [showContent, setShowContent] = useState(true); // 초기에는 보임
@@ -29,6 +31,10 @@ function App() {
     const [loadingProgress, setLoadingProgress] = useState(0);
     const [isLoadingComplete, setIsLoadingComplete] = useState(false);
     const [hasEntered, setHasEntered] = useState(false);
+
+    useEffect(() => {
+        currentPresetIndexRef.current = currentPresetIndex;
+    }, [currentPresetIndex]);
 
     useEffect(() => {
         const canvas = document.getElementById("c") as HTMLCanvasElement;
@@ -80,13 +86,34 @@ function App() {
 
                     if (clickedObject) {
                         isAnimatingRef.current = true;
-                        setShowContent(false); // 🔑 애니메이션 시작 시 숨김
+                        setShowContent(false);
 
                         const objectType = clickedObject.userData.type;
+
                         if (objectType) {
-                            const category = getCategoryFromType(objectType);
-                            setCurrentCategory(category);
+                            let presetIndex = CAMERA_PRESETS.findIndex(
+                                preset => preset.id === objectType
+                            );
+
+                            if (presetIndex === -1) {
+                                const category = getCategoryFromType(objectType);
+
+                                setCurrentCategory(category);
+                                presetIndex = CAMERA_PRESETS.findIndex(
+                                    preset => preset.category === category
+                                );
+                            } else {
+                                const category = CAMERA_PRESETS[presetIndex].category;
+
+                                setCurrentCategory(category);
+                            }
+
+                            if (presetIndex !== -1) {
+                                setCurrentPresetIndex(presetIndex);
+                                currentPresetIndexRef.current = presetIndex;
+                            }
                         }
+
                         const target = calculateCameraTarget(clickedObject);
                         const timeline = animateCameraTo(camera, target, controls);
 
@@ -123,7 +150,6 @@ function App() {
                     }
 
                     const preset = CAMERA_PRESETS[nextIndex];
-                    console.log('⬆️ 스크롤:', prevIndex, '→', nextIndex, preset.name);
 
                     isAnimatingRef.current = true;
                     setShowContent(false); // 🔑 애니메이션 시작 시 숨김
@@ -160,7 +186,6 @@ function App() {
                     }
 
                     const preset = CAMERA_PRESETS[nextIndex];
-                    console.log('⬇️ 스크롤:', prevIndex, '→', nextIndex, preset.name);
 
                     isAnimatingRef.current = true;
                     setShowContent(false); // 🔑 애니메이션 시작 시 숨김
@@ -265,21 +290,26 @@ function App() {
             return;
         }
 
-        const categoryPosition = CATEGORY_POSITIONS[category];
+        const targetPreset = CAMERA_PRESETS[targetPresetIndex];
 
         isAnimatingRef.current = true;
         setShowContent(false); // 🔑 애니메이션 시작 시 숨김
         setCurrentCategory(category);
+        setCurrentPresetIndex(targetPresetIndex);
 
         if (targetPresetIndex !== -1) {
             setCurrentPresetIndex(targetPresetIndex);
         }
 
         const timeline = animateCameraTo(
-            cameraRef.current,
-            categoryPosition,
-            controlsRef.current
-        );
+                cameraRef.current,
+                {
+                    position: targetPreset.position,
+                    lookAt: targetPreset.lookAt
+                },
+                controlsRef.current
+            )
+        ;
 
         timeline.eventCallback('onComplete', () => {
             isAnimatingRef.current = false;
@@ -289,6 +319,31 @@ function App() {
 
     const handleEnter = () => {
         setHasEntered(true);
+        if (cameraRef.current && controlsRef.current) {
+            const defaultPreset = CAMERA_PRESETS.find(p => p.id === 'default') || CAMERA_PRESETS[0];
+
+            if (defaultPreset) {
+                isAnimatingRef.current = true;
+                setShowContent(false);
+
+                const timeline = animateCameraTo(
+                    cameraRef.current,
+                    {
+                        position: defaultPreset.position,
+                        lookAt: defaultPreset.lookAt
+                    },
+                    controlsRef.current,
+                    1.5
+                );
+
+                timeline.eventCallback('onComplete', () => {
+                    isAnimatingRef.current = false;
+                    setShowContent(true);
+                    setCurrentCategory(defaultPreset.category);
+                    setCurrentPresetIndex(0);
+                });
+            }
+        }
     }
 
     return (

@@ -51,7 +51,7 @@ export default function CategoryNav({onCategoryClick, currentCategory, currentIn
             {/* 하단 프로그레스 바 */}
             <div className="fixed bottom-0 left-0 w-full h-1 bg-white/5 z-10">
                 <div
-                    className="h-full bg-white transition-all duration-500 ease-out"
+                    className="h-full bg-purple-400 transition-all duration-500 ease-out"
                     style={{width: `${((currentIndex + 1) / 7) * 100}%`}}
                 />
             </div>
