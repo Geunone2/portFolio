@@ -58,10 +58,10 @@ export default function LoadingScreen({progress, isComplete, onEnter}: LoadingSc
         >
             {/* 로고 또는 제목 */}
             <div className="mb-12 text-center">
-                <h1 className="text-5xl text-white text-center leading-relaxed">
-                    안녕하세요.<br/>
-                    프론트엔드 개발자 박근원입니다.
+                <h1 className="text-5xl text-purple-400 text-center leading-relaxed">
+                    GeunWon's PortFolio
                 </h1>
+                <h2 className="text-4xl text-center text-white leading-relaxed">3D 인터랙티브 포트폴리오에 오신 것을 환영합니다.</h2>
             </div>
 
             {/* 프로그레스 바 */}
@@ -79,7 +79,7 @@ export default function LoadingScreen({progress, isComplete, onEnter}: LoadingSc
             <div className="flex items-center gap-2 mb-8">
                 <span
                     ref={percentRef}
-                    className="text-3xl font-bold text-white"
+                    className="text-3xl font-bold text-purple-400"
                 >
                     0
                 </span>
@@ -102,7 +102,7 @@ export default function LoadingScreen({progress, isComplete, onEnter}: LoadingSc
                 <button
                     ref={buttonRef}
                     onClick={handleEnter}
-                    className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-full text-white font-semibold text-lg transition-all transform hover:scale-105 opacity-0 pointer-events-auto"
+                    className="px-8 py-4 bg-linear-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-full text-white font-semibold text-lg transition-all transform hover:scale-105 opacity-0 pointer-events-auto"
                 >
                     들어가기
                 </button>

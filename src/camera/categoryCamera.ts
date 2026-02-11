@@ -129,7 +129,7 @@ export const CATEGORY_POSITIONS = {
 export type CategoryType = keyof typeof CATEGORY_POSITIONS;
 
 export function getCategoryFromType(type: string): CategoryType {
-    if (type === "introduce") return "intro";
+    if (type === "intro") return "intro";
     if (type === "skills") return "skills";
     if (type.startsWith("project")) return "project";
     if (type === "contact") return "contact";
