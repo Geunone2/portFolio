@@ -1,4 +1,3 @@
-import type {ContentManagerProps} from "../../types/types.ts";
 import DefaultContent from "../contents/DefaultContent.tsx";
 import IntroContent from "../contents/IntroContent.tsx";
 import SKillsContent from "../contents/SkillsContent.tsx";
@@ -6,6 +5,7 @@ import ProjectOverviewContent from "../contents/ProjectOverviewContent.tsx";
 import ProjectNextFrameContent from "../contents/ProjectNextFrameContent.tsx";
 import ProjectLowPolyContent from "../contents/ProjectLowPolyContent.tsx";
 import ContactContent from "../contents/ContactContent.tsx";
+import type {ContentManagerProps} from "../../types";
 
 export default function ContentManager({presetId, isVisible, onBack}: ContentManagerProps) {
     switch (presetId) {

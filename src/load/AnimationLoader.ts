@@ -1,9 +1,5 @@
 import * as THREE from 'three';
-
-export interface AnimationSetup {
-    mixer: THREE.AnimationMixer;
-    actions: THREE.AnimationAction[];
-}
+import type {AnimationSetup} from "../types";
 
 export default function setupAnimations(
     model: THREE.Group,

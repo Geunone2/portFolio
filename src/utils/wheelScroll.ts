@@ -1,8 +1,4 @@
-export interface WheelScrollOptions {
-    onScrollUp: () => void;
-    onScrollDown: () => void;
-    debounceTime?: number;
-}
+import type {WheelScrollOptions} from "../types";
 
 export function createWheelScrollHandler(options: WheelScrollOptions) {
     const {onScrollUp, onScrollDown, debounceTime = 800} = options;

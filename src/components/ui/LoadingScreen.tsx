@@ -1,13 +1,8 @@
 import {useEffect, useRef} from "react";
 import {gsap} from "gsap";
+import type {LoadingState} from "../../types";
 
-interface LoadingScreenProps {
-    progress: number;
-    isComplete: boolean;
-    onEnter: () => void;
-}
-
-export default function LoadingScreen({progress, isComplete, onEnter}: LoadingScreenProps) {
+export default function LoadingScreen({progress, isComplete, onEnter}: LoadingState) {
     const containerRef = useRef<HTMLDivElement>(null);
     const progressBarRef = useRef<HTMLDivElement>(null);
     const percentRef = useRef<HTMLSpanElement>(null);

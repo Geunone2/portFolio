@@ -1,7 +1,7 @@
 import {useEffect, useRef} from "react";
 import {gsap} from "gsap";
-import type {ContentProps} from "../../types/types.ts";
 import { FaDesktop } from "react-icons/fa";
+import type {ContentProps} from "../../types";
 
 export default function DefaultContent({isVisible}: ContentProps) {
     const containerRef = useRef<HTMLDivElement>(null);
