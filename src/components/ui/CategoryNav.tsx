@@ -1,10 +1,5 @@
-import type {CategoryType} from "../../camera/categoryCamera.ts";
+import type {CategoryNavProps, CategoryType} from "../../types";
 
-interface CategoryNavProps {
-    onCategoryClick: (category: CategoryType) => void;
-    currentCategory?: CategoryType;
-    currentIndex?: number;
-}
 
 export default function CategoryNav({onCategoryClick, currentCategory, currentIndex = 0}: CategoryNavProps) {
     const categories: { id: CategoryType; label: string; number: string }[] = [

@@ -1,14 +1,6 @@
 import * as THREE from "three";
+import type {CameraPreset, CategoryType} from "../types";
 
-export interface CameraPreset {
-    id: string;
-    name: string;
-    category: "default" | "intro" | "skills" | "project" | "contact";
-    position: THREE.Vector3;
-    lookAt: THREE.Vector3;
-}
-
-// 스크롤 순서
 export const CAMERA_PRESETS: CameraPreset[] = [
     {
         id: "default",
@@ -117,16 +109,6 @@ export const CAMERA_PRESETS: CameraPreset[] = [
         )
     }
 ]
-
-export const CATEGORY_POSITIONS = {
-    default: CAMERA_PRESETS[0],
-    intro: CAMERA_PRESETS[1],
-    skills: CAMERA_PRESETS[2],
-    project: CAMERA_PRESETS[3],
-    contact: CAMERA_PRESETS[6]
-} as const;
-
-export type CategoryType = keyof typeof CATEGORY_POSITIONS;
 
 export function getCategoryFromType(type: string): CategoryType {
     if (type === "intro") return "intro";

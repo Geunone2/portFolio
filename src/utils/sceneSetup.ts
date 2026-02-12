@@ -1,10 +1,5 @@
 import * as THREE from "three";
-
-export interface SceneSetup {
-    scene: THREE.Scene;
-    camera: THREE.PerspectiveCamera;
-    renderer: THREE.WebGLRenderer;
-}
+import type {SceneSetup} from "../types";
 
 export default function initialSetup(canvas: HTMLCanvasElement): SceneSetup {
     const scene = new THREE.Scene();

@@ -1,30 +1,8 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {TEXTURE_MAPPING, type TextureMappingKey} from "./textureConfig.ts";
-
-export interface ModelLoadResult {
-    model: THREE.Group;
-    animations: THREE.AnimationClip[];
-}
-
-function loadHighQualityTexture(textureLoader: THREE.TextureLoader, path: string): Promise<THREE.Texture> {
-    return new Promise((resolve, reject) => {
-        textureLoader.load(
-            path,
-            (loadedTexture) => {
-                loadedTexture.colorSpace = THREE.SRGBColorSpace;
-                loadedTexture.anisotropy = 16;
-                loadedTexture.minFilter = THREE.LinearMipmapLinearFilter;
-                loadedTexture.magFilter = THREE.LinearFilter;
-                loadedTexture.wrapS = THREE.ClampToEdgeWrapping;
-                loadedTexture.wrapT = THREE.ClampToEdgeWrapping;
-                resolve(loadedTexture);
-            },
-            undefined,
-            reject
-        );
-    });
-}
+import type {ModelLoadResult} from "../types";
+import {loadHighQualityTexture} from "../utils/loadHightQualityTexture.ts";
 
 export function loadGLTFModel(
     modelPath: string,
