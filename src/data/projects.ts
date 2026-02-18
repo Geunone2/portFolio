@@ -20,8 +20,8 @@ export const PROJECTS: Record<"nextFrame" | "lowPoly", Project> = {
     lowPoly: {
         name: "Low Poly",
         period: "2023.09 - 2023.12",
-        github: "https://github.com/low-poly-dev",
-        demo: "https://lowpoly.example.com/",
+        github: "https://github.com/Geunone2/three-lowpoly",
+        demo: "https://three-lowpoly.vercel.app/",
         techStack: ["React", "TypeScript", "Three.js", "TailwindCSS", "Vite"],
         description: "Low Poly는 3D 그래픽을 활용한 인터랙티브 웹 경험을 제공하는 프로젝트입니다.",
         features: [

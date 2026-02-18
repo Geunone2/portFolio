@@ -14,7 +14,7 @@ export default function SkillsContent({isVisible, onBack}: ContentProps) {
             stagger={0.15}
         >
             {/* 제목 */}
-            <h2 className="text-3xl font-bold text-purple-400 mb-6 text-start">
+            <h2 className="text-3xl font-bold text-purple-400 mb-6 -mt-2 text-start">
                 Tech Stacks
             </h2>
 

@@ -16,7 +16,7 @@ export default function ProjectLowPolyContent({isVisible, onBack}: ContentProps)
         >
             {/* 프로젝트 헤더 */}
             <div className="mb-6">
-                <h2 className="text-3xl font-bold text-purple-400 mb-2 animate-item">
+                <h2 className="text-3xl font-bold text-purple-400 mb-2 -mt-2 animate-item">
                     {PROJECTS.lowPoly.name}
                 </h2>
                 <div className="flex items-center gap-2 text-black animate-item">
