@@ -10,14 +10,16 @@ export default function LoadingScreen({progress, isComplete, onEnter}: LoadingSt
 
     useEffect(() => {
         if (progressBarRef.current && percentRef.current) {
+            const clampedProgress = Math.min(Math.max(progress, 0), 100);
+
             gsap.to(progressBarRef.current, {
-                width: `${progress}%`,
+                width: `${clampedProgress}%`,
                 duration: 0.3,
                 ease: "power2.out"
             });
 
             gsap.to(percentRef.current, {
-                textContent: Math.round(progress),
+                textContent: Math.round(clampedProgress),
                 duration: 0.3,
                 snap: {textContent: 1},
                 ease: "power2.out"
