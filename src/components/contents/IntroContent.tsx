@@ -13,7 +13,7 @@ export default function IntroContent({isVisible, onBack}: ContentProps) {
             position="right"
         >
             {/* 제목 */}
-            <h2 className="text-3xl font-bold text-purple-400 mb-6 text-center animate-item">
+            <h2 className="text-3xl font-bold text-purple-400 mb-6 -mt-2 text-center animate-item">
                 About Me
             </h2>
 

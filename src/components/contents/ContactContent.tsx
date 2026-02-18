@@ -13,7 +13,7 @@ export default function ContactContent({isVisible, onBack}: ContentProps) {
             position="center"
         >
             {/* 제목 */}
-            <h2 className="text-3xl font-bold text-purple-400 mb-6 text-center contact-item">
+            <h2 className="text-3xl font-bold text-purple-400 mb-6 -mt-2 text-center contact-item">
                 Contact
             </h2>
 
@@ -38,12 +38,6 @@ export default function ContactContent({isVisible, onBack}: ContentProps) {
                     </a>
                 ))}
             </div>
-
-            {/* 메시지 */
-            }
-            <p className="contact-item text-center text-gray-400 mt-6">
-                언제든지 연락주세요! 🚀
-            </p>
         </BaseContentLayout>
     )
         ;
