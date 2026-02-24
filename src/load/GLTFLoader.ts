@@ -12,15 +12,12 @@ export function loadGLTFModel(
         const loader = new GLTFLoader();
         const textureLoader = new THREE.TextureLoader();
 
+        let maxProgress = 0;
+
         loader.load(
             modelPath,
             async (gltf) => {
                 const model = gltf.scene;
-
-                // GLTF 로딩 완료 시 50%
-                if (onProgress) {
-                    onProgress(50);
-                }
 
                 const textureLoadPromises: Promise<void>[] = [];
                 const meshesWithTextures: Array<{
@@ -75,8 +72,12 @@ export function loadGLTFModel(
                             await promise;
                             loadedCount++;
                             const textureProgress = 50 + (loadedCount / totalTextures) * 50;
-                            if (onProgress) {
-                                onProgress(textureProgress);
+
+                            if (textureProgress > maxProgress) {
+                                maxProgress = textureProgress;
+                                if (onProgress) {
+                                    onProgress(textureProgress)
+                                }
                             }
                         })
                     );
@@ -100,14 +101,19 @@ export function loadGLTFModel(
                         animations: gltf.animations,
                     });
                 } catch (error) {
+                    console.error('❌ Texture loading failed:', error);
                     reject(error);
                 }
             },
             (xhr) => {
-                // GLTF 로딩은 0~50%
                 const percentComplete = (xhr.loaded / xhr.total) * 50;
-                if (onProgress) {
-                    onProgress(percentComplete);
+
+                if (percentComplete > maxProgress) {
+                    maxProgress = percentComplete;
+
+                    if (onProgress) {
+                        onProgress(percentComplete);
+                    }
                 }
             },
             reject
