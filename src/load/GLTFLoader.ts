@@ -13,10 +13,16 @@ export function loadGLTFModel(
         const textureLoader = new THREE.TextureLoader();
 
         let maxProgress = 0;
+        const startTime = Date.now();
+        console.log('🚀 [GLTF] Loading started at:', startTime);
 
         loader.load(
             modelPath,
             async (gltf) => {
+                const onLoadTime = Date.now();
+                console.log('✅ [GLTF] onLoad triggered at:', onLoadTime, `(+${onLoadTime - startTime}ms)`);
+                console.log('📊 [GLTF] maxProgress before textures:', maxProgress);
+
                 const model = gltf.scene;
 
                 const textureLoadPromises: Promise<void>[] = [];
@@ -62,6 +68,8 @@ export function loadGLTFModel(
                     }
                 });
 
+                console.log(`🖼️ [TEXTURE] Found ${textureLoadPromises.length} textures to load`);
+
                 try {
                     let loadedCount = 0;
                     const totalTextures = textureLoadPromises.length;
@@ -69,14 +77,20 @@ export function loadGLTFModel(
                     // 각 텍스처 로딩마다 진행률 업데이트 (50% ~ 100%)
                     await Promise.all(
                         textureLoadPromises.map(async (promise) => {
+                            const textureStartTime = Date.now();
                             await promise;
+                            const textureEndTime = Date.now();
                             loadedCount++;
                             const textureProgress = 50 + (loadedCount / totalTextures) * 50;
 
                             if (textureProgress > maxProgress) {
                                 maxProgress = textureProgress;
+                                console.log(`📊 [TEXTURE ${loadedCount}/${totalTextures}] Progress: ${textureProgress.toFixed(1)}% (took ${textureEndTime - textureStartTime}ms)`);
+
                                 if (onProgress) {
                                     onProgress(textureProgress)
+                                } else {
+                                    console.warn(`⚠️ [TEXTURE ${loadedCount}/${totalTextures}] Progress IGNORED: ${textureProgress.toFixed(1)}% (maxProgress: ${maxProgress})`);
                                 }
                             }
                         })
@@ -95,6 +109,8 @@ export function loadGLTFModel(
                             mesh.material = material;
                         }
                     });
+                    const totalTime = Date.now() - startTime;
+                    console.log(`🎉 [COMPLETE] Total loading time: ${totalTime}ms, Final progress: ${maxProgress}%`);
 
                     resolve({
                         model,
@@ -106,14 +122,28 @@ export function loadGLTFModel(
                 }
             },
             (xhr) => {
+                const xhrTime = Date.now();
                 const percentComplete = (xhr.loaded / xhr.total) * 50;
+
+
+                console.log(`📥 [XHR] at ${xhrTime - startTime}ms:`, {
+                    loaded: xhr.loaded,
+                    total: xhr.total,
+                    rawPercentage: `${((xhr.loaded / xhr.total) * 100).toFixed(1)}%`,
+                    calculatedProgress: `${percentComplete.toFixed(1)}%`,
+                    currentMaxProgress: maxProgress
+                });
 
                 if (percentComplete > maxProgress) {
                     maxProgress = percentComplete;
+                    console.log(`✅ [XHR] Progress updated to: ${percentComplete.toFixed(1)}%`);
 
                     if (onProgress) {
                         onProgress(percentComplete);
+                    } else {
+                        console.warn(`⚠️ [XHR] Progress IGNORED: ${percentComplete.toFixed(1)}% (maxProgress: ${maxProgress})`);
                     }
+
                 }
             },
             reject
