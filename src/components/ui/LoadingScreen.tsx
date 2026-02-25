@@ -9,8 +9,12 @@ export default function LoadingScreen({progress, isComplete, onEnter}: LoadingSt
     const buttonRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
+        console.log('🔵 [LoadingScreen] Progress received:', progress, 'isComplete:', isComplete);
+
         if (progressBarRef.current && percentRef.current) {
             const clampedProgress = Math.min(Math.max(progress, 0), 100);
+
+            console.log('🟢 [LoadingScreen] Displaying:', clampedProgress, '%');
 
             gsap.to(progressBarRef.current, {
                 width: `${clampedProgress}%`,
